@@ -1,0 +1,51 @@
+{% extends 'base/base.html' %}
+{% block title %}Complete Your Profile{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7 col-lg-6">
+    <div class="card shadow">
+      <div class="card-header bg-primary text-white text-center">
+        <h4><i class="fas fa-user-edit"></i> Complete Your Student Profile</h4>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">First Name</label>
+              <input type="text" class="form-control" name="first_name">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Last Name</label>
+              <input type="text" class="form-control" name="last_name">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Registration Number <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="registration_number" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Branch / Department <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="branch" required>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Semester <span class="text-danger">*</span></label>
+              <select class="form-select" name="semester" required>
+                {% for i in "12345678" %}<option value="{{ i }}">Semester {{ i }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Phone</label>
+              <input type="tel" class="form-control" name="phone">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="fas fa-save"></i> Save Profile
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

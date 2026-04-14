@@ -1,0 +1,65 @@
+{% extends 'base/base.html' %}
+{% block title %}Attendance{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-calendar-check"></i> My Attendance</h2>
+
+{% for data in attendance_data %}
+{% if data.shortage %}
+<div class="alert alert-danger d-flex align-items-center">
+  <i class="fas fa-exclamation-triangle me-2 fs-5"></i>
+  <div><strong>Attendance Shortage:</strong> {{ data.course.code }} — {{ data.course.name }}
+  ({{ data.percentage }}% — below {{ data.threshold }}% threshold)</div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% for data in attendance_data %}
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center
+    {% if data.shortage %}bg-danger text-white{% elif data.percentage >= 75 %}bg-success text-white{% else %}bg-warning{% endif %}">
+    <h5 class="mb-0">{{ data.course.code }} — {{ data.course.name }}</h5>
+    <span class="fs-5 fw-bold">{{ data.percentage }}%</span>
+  </div>
+  <div class="card-body">
+    <div class="row mb-3">
+      <div class="col-md-8">
+        <div class="progress" style="height:22px">
+          <div class="progress-bar {% if data.percentage >= 75 %}bg-success{% elif data.percentage >= 60 %}bg-warning{% else %}bg-danger{% endif %}"
+               style="width:{{ data.percentage }}%" aria-valuenow="{{ data.percentage }}" aria-valuemin="0" aria-valuemax="100">
+            {{ data.percentage }}%
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 text-muted small pt-1">
+        {{ data.present }} present / {{ data.total }} total
+        {% if data.shortage %}
+        <br><span class="text-danger fw-bold"><i class="fas fa-warning"></i> Below {{ data.threshold }}% minimum</span>
+        {% endif %}
+      </div>
+    </div>
+    <h6 class="mt-3">Recent Records</h6>
+    <div class="table-responsive">
+      <table class="table table-sm table-hover">
+        <thead class="table-light"><tr><th>Date</th><th>Status</th><th>Remarks</th></tr></thead>
+        <tbody>
+          {% for record in data.records %}
+          <tr>
+            <td>{{ record.date|date:"M d, Y" }}</td>
+            <td>
+              {% if record.status == 'Present' %}<span class="badge bg-success">Present</span>
+              {% elif record.status == 'Late' %}<span class="badge bg-warning text-dark">Late</span>
+              {% else %}<span class="badge bg-danger">Absent</span>{% endif %}
+            </td>
+            <td>{{ record.remarks|default:"—" }}</td>
+          </tr>
+          {% empty %}<tr><td colspan="3" class="text-center text-muted">No records yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% empty %}
+<div class="alert alert-info">No attendance records found. You may not be enrolled in any courses yet.</div>
+{% endfor %}
+{% endblock %}

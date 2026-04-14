@@ -1,0 +1,85 @@
+{% extends 'base/base.html' %}
+{% block title %}{{ course.code }} – {{ course.name }}{% endblock %}
+{% block content %}
+<h2 class="mb-1"><i class="fas fa-book"></i> {{ course.code }} — {{ course.name }}</h2>
+<p class="text-muted">Credits: {{ course.credits }} | Semester: {{ course.semester }}</p>
+
+<ul class="nav nav-tabs mb-4" id="courseTabs">
+  <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#attendance-tab">Attendance</a></li>
+  <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#assignments-tab">Assignments</a></li>
+  <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#timetable-tab">Timetable</a></li>
+</ul>
+
+<div class="tab-content">
+  <div class="tab-pane fade show active" id="attendance-tab">
+    <div class="d-flex align-items-center gap-3 mb-3">
+      <div>
+        <span class="fs-4 fw-bold {% if attendance_percentage >= 75 %}text-success{% elif attendance_percentage >= 60 %}text-warning{% else %}text-danger{% endif %}">
+          {{ attendance_percentage }}%
+        </span>
+        <span class="text-muted ms-1">({{ present }}/{{ total_classes }} classes)</span>
+      </div>
+      {% if attendance_percentage < 75 and total_classes > 0 %}
+      <span class="badge bg-danger fs-6"><i class="fas fa-exclamation-triangle"></i> Attendance Shortage</span>
+      {% endif %}
+    </div>
+    <div class="progress mb-4" style="height:20px">
+      <div class="progress-bar {% if attendance_percentage >= 75 %}bg-success{% elif attendance_percentage >= 60 %}bg-warning{% else %}bg-danger{% endif %}"
+           role="progressbar" style="width:{{ attendance_percentage }}%" aria-valuenow="{{ attendance_percentage }}" aria-valuemin="0" aria-valuemax="100">
+        {{ attendance_percentage }}%
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm table-hover">
+        <thead class="table-light"><tr><th>Date</th><th>Status</th><th>Remarks</th></tr></thead>
+        <tbody>
+          {% for record in attendance_records %}
+          <tr>
+            <td>{{ record.date|date:"M d, Y" }}</td>
+            <td>
+              {% if record.status == 'Present' %}<span class="badge bg-success">Present</span>
+              {% elif record.status == 'Late' %}<span class="badge bg-warning text-dark">Late</span>
+              {% else %}<span class="badge bg-danger">Absent</span>{% endif %}
+            </td>
+            <td>{{ record.remarks|default:"—" }}</td>
+          </tr>
+          {% empty %}<tr><td colspan="3" class="text-center text-muted">No records yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tab-pane fade" id="assignments-tab">
+    <div class="list-group">
+      {% for assignment in assignments %}
+      <div class="list-group-item">
+        <div class="d-flex justify-content-between">
+          <strong>{{ assignment.title }}</strong>
+          <small class="text-muted">Due: {{ assignment.due_date|date:"M d, Y H:i" }}</small>
+        </div>
+        <p class="mb-1 text-muted small">{{ assignment.description|truncatewords:25 }}</p>
+        <span class="badge bg-secondary">Max: {{ assignment.max_marks }} marks</span>
+        <a href="{% url 'submit_assignment' assignment.id %}" class="btn btn-sm btn-outline-primary ms-2">Submit</a>
+      </div>
+      {% empty %}<div class="alert alert-info">No assignments for this course.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="tab-pane fade" id="timetable-tab">
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead class="table-primary"><tr><th>Day</th><th>Start</th><th>End</th><th>Room</th></tr></thead>
+        <tbody>
+          {% for slot in timetable %}
+          <tr><td>{{ slot.day }}</td><td>{{ slot.start_time }}</td><td>{{ slot.end_time }}</td><td>{{ slot.room }}</td></tr>
+          {% empty %}<tr><td colspan="4" class="text-center text-muted">No timetable entries.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<a href="{% url 'courses' %}" class="btn btn-secondary mt-3"><i class="fas fa-arrow-left"></i> Back to Courses</a>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base/base.html' %}
+{% block title %}Assignments{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-tasks"></i> Assignments</h2>
+
+{% if not assignment_list %}
+<div class="alert alert-info">No assignments found.</div>
+{% else %}
+<div class="row">
+  {% for item in assignment_list %}
+  <div class="col-md-6 mb-4">
+    <div class="card h-100 {% if item.is_overdue and not item.submission %}border-danger{% endif %}">
+      <div class="card-header d-flex justify-content-between
+        {% if item.submission and item.submission.marks is not None %}bg-success text-white
+        {% elif item.submission %}bg-info text-white
+        {% elif item.is_overdue %}bg-danger text-white
+        {% else %}bg-warning{% endif %}">
+        <h6 class="mb-0">{{ item.assignment.course.code }}: {{ item.assignment.title }}</h6>
+        {% if item.submission and item.submission.marks is not None %}<span class="badge bg-light text-dark">Graded</span>
+        {% elif item.submission %}<span class="badge bg-light text-dark">Submitted</span>
+        {% elif item.is_overdue %}<span class="badge bg-light text-dark">Overdue</span>
+        {% else %}<span class="badge bg-light text-dark">Pending</span>{% endif %}
+      </div>
+      <div class="card-body">
+        <p class="text-muted small">{{ item.assignment.description|truncatewords:30 }}</p>
+        <p><strong>Due:</strong> {{ item.assignment.due_date|date:"M d, Y H:i" }}</p>
+        <p><strong>Max Marks:</strong> {{ item.assignment.max_marks }}</p>
+        {% if item.submission %}
+          <p><strong>Submitted:</strong> {{ item.submission.submitted_at|date:"M d, Y H:i" }}</p>
+          {% if item.submission.marks is not None %}
+          <p><strong>Marks:</strong> <span class="text-success fw-bold">{{ item.submission.marks }} / {{ item.assignment.max_marks }}</span></p>
+          {% endif %}
+          {% if item.submission.feedback %}
+          <p><strong>Feedback:</strong> {{ item.submission.feedback }}</p>
+          {% endif %}
+        {% endif %}
+      </div>
+      <div class="card-footer">
+        {% if not item.is_overdue or not item.submission %}
+        <a href="{% url 'submit_assignment' item.assignment.id %}" class="btn btn-sm btn-primary">
+          <i class="fas fa-upload"></i> {% if item.submission %}Resubmit{% else %}Submit{% endif %}
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base/base.html' %}
+{% block title %}My Quiz Attempts{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-history"></i> My Quiz Attempts</h2>
+{% if attempts %}
+<div class="table-responsive">
+  <table class="table table-hover">
+    <thead class="table-dark">
+      <tr><th>Quiz</th><th>Course</th><th>Score</th><th>Status</th><th>Date</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      {% for attempt in attempts %}
+      <tr>
+        <td>{{ attempt.quiz.title }}</td>
+        <td>{{ attempt.quiz.course.code }}</td>
+        <td>
+          {% if attempt.is_completed %}
+          {{ attempt.score }} / {{ attempt.quiz.total_marks }}
+          ({% widthratio attempt.score attempt.quiz.total_marks 100 %}%)
+          {% else %}<span class="badge bg-warning text-dark">In Progress</span>{% endif %}
+        </td>
+        <td>
+          {% if attempt.is_completed %}
+            {% if attempt.score >= attempt.quiz.passing_marks %}
+            <span class="badge bg-success">Passed</span>
+            {% else %}
+            <span class="badge bg-danger">Failed</span>
+            {% endif %}
+          {% else %}<span class="badge bg-warning text-dark">Incomplete</span>{% endif %}
+        </td>
+        <td>{{ attempt.start_time|date:"M d, Y H:i" }}</td>
+        <td>
+          {% if attempt.is_completed %}
+          <a href="{% url 'quiz_result' attempt.id %}" class="btn btn-sm btn-primary">
+            <i class="fas fa-eye"></i> View
+          </a>
+          {% else %}
+          <a href="{% url 'take_quiz' attempt.id %}" class="btn btn-sm btn-success">
+            <i class="fas fa-play"></i> Continue
+          </a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="alert alert-info">You haven't attempted any quizzes yet. <a href="{% url 'quiz_list' %}">Browse quizzes</a>.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'base/base.html' %}
+{% block title %}Grade Submission{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-pen"></i> Grade Submission</h2>
+<div class="card mb-4">
+  <div class="card-header bg-info text-white"><h5>{{ submission.assignment.title }}</h5></div>
+  <div class="card-body">
+    <p><strong>Student:</strong> {{ submission.student.user.get_full_name|default:submission.student.user.username }}</p>
+    <p><strong>Submitted:</strong> {{ submission.submitted_at|date:"M d, Y H:i" }}</p>
+    <p><strong>Max Marks:</strong> {{ submission.assignment.max_marks }}</p>
+    <p><strong>File:</strong> <a href="{{ submission.file.url }}" target="_blank">Download</a></p>
+  </div>
+</div>
+<div class="card">
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label fw-bold">Marks (out of {{ submission.assignment.max_marks }})</label>
+        <input type="number" class="form-control w-auto" name="marks" min="0"
+               max="{{ submission.assignment.max_marks }}" value="{{ submission.marks|default:'' }}" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-bold">Feedback</label>
+        <textarea class="form-control" name="feedback" rows="3">{{ submission.feedback }}</textarea>
+      </div>
+      <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Submit Grade</button>
+      <a href="{% url 'faculty_dashboard' %}" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

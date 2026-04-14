@@ -1,0 +1,43 @@
+{% extends 'base/base.html' %}
+{% block title %}Faculty Profile Setup{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7 col-lg-6">
+    <div class="card shadow">
+      <div class="card-header bg-success text-white text-center">
+        <h4><i class="fas fa-chalkboard-teacher"></i> Complete Faculty Profile</h4>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">First Name</label>
+              <input type="text" class="form-control" name="first_name">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Last Name</label>
+              <input type="text" class="form-control" name="last_name">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Employee ID <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="employee_id" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Department <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="department" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Phone</label>
+            <input type="tel" class="form-control" name="phone">
+          </div>
+          <button type="submit" class="btn btn-success w-100">
+            <i class="fas fa-save"></i> Save Profile
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

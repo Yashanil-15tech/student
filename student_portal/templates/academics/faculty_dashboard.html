@@ -1,0 +1,129 @@
+{% extends 'base/base.html' %}
+{% block title %}Faculty Dashboard{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-chalkboard-teacher"></i> Faculty Dashboard</h2>
+<p class="text-muted">Welcome, {{ faculty.user.get_full_name|default:faculty.user.username }} &mdash; {{ faculty.department }}</p>
+
+<div class="row mb-4">
+  <div class="col-md-3 mb-3">
+    <div class="card text-white bg-primary">
+      <div class="card-body"><h6><i class="fas fa-book"></i> My Courses</h6><h2>{{ courses|length }}</h2></div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="card text-white bg-success">
+      <div class="card-body"><h6><i class="fas fa-users"></i> Total Enrollments</h6><h2>{{ enrollment_count }}</h2></div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="card text-white bg-warning">
+      <div class="card-body"><h6><i class="fas fa-tasks"></i> Pending Grading</h6><h2>{{ pending_submissions }}</h2></div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="card text-white bg-info">
+      <div class="card-body"><h6><i class="fas fa-question-circle"></i> Recent Quizzes</h6><h2>{{ recent_quizzes|length }}</h2></div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-book"></i> My Courses</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+          {% for course in courses %}
+          <div class="list-group-item">
+            <strong>{{ course.code }}</strong> — {{ course.name }}
+            <div class="mt-2 d-flex gap-2 flex-wrap">
+              <a href="{% url 'faculty_mark_attendance' course.id %}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-calendar-check"></i> Attendance
+              </a>
+              <a href="{% url 'faculty_upload_marks' course.id %}" class="btn btn-sm btn-outline-success">
+                <i class="fas fa-upload"></i> Upload Marks
+              </a>
+            </div>
+          </div>
+          {% empty %}
+          <div class="list-group-item text-muted">No courses assigned. Ask admin to assign courses.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header bg-warning d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-bullhorn"></i> Announcements</h5>
+        <a href="{% url 'faculty_create_announcement' %}" class="btn btn-sm btn-dark">
+          <i class="fas fa-plus"></i> New
+        </a>
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {% for ann in announcements %}
+          <li class="list-group-item">
+            <strong>{{ ann.title }}</strong>
+            {% if ann.target_course %}<span class="badge bg-secondary ms-1">{{ ann.target_course.code }}</span>{% endif %}
+            <br><small class="text-muted">{{ ann.created_at|date:"M d, Y" }}</small>
+          </li>
+          {% empty %}
+          <li class="list-group-item text-muted">No announcements yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-12 mb-4">
+    <div class="card">
+      <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-question-circle"></i> Quizzes</h5>
+        <a href="{% url 'faculty_create_quiz' %}" class="btn btn-sm btn-light">
+          <i class="fas fa-plus"></i> Create Quiz
+        </a>
+      </div>
+      <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+          {% for quiz in recent_quizzes %}
+          <div class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <strong>{{ quiz.title }}</strong>
+              <span class="badge bg-secondary ms-1">{{ quiz.course.code }}</span>
+              {% if quiz.is_active %}<span class="badge bg-success ms-1">Active</span>
+              {% else %}<span class="badge bg-secondary ms-1">Inactive</span>{% endif %}
+              <br><small class="text-muted">{{ quiz.questions.count }} questions &bull; {{ quiz.duration_minutes }} min &bull; {{ quiz.total_marks }} marks</small>
+            </div>
+            <div class="d-flex gap-2">
+              <a href="{% url 'faculty_add_question' quiz.id %}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-list"></i> Questions
+              </a>
+              <a href="{% url 'faculty_edit_quiz' quiz.id %}" class="btn btn-sm btn-outline-warning">
+                <i class="fas fa-edit"></i>
+              </a>
+            </div>
+          </div>
+          {% empty %}
+          <div class="list-group-item text-muted text-center">
+            No quizzes yet. <a href="{% url 'faculty_create_quiz' %}">Create your first quiz</a>.
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% if recent_quizzes %}
+      <div class="card-footer">
+        <a href="{% url 'faculty_manage_quizzes' %}" class="btn btn-sm btn-info text-white">
+          <i class="fas fa-list"></i> View All Quizzes
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

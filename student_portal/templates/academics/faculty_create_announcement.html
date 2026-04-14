@@ -1,0 +1,35 @@
+{% extends 'base/base.html' %}
+{% block title %}Create Announcement{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card shadow">
+      <div class="card-header bg-warning"><h5><i class="fas fa-bullhorn"></i> New Announcement</h5></div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-bold">Title <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="title" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Content <span class="text-danger">*</span></label>
+            <textarea class="form-control" name="content" rows="5" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Target Course (optional — leave blank for all)</label>
+            <select class="form-select" name="course_id">
+              <option value="">All students</option>
+              {% for course in courses %}
+              <option value="{{ course.id }}">{{ course.code }} — {{ course.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn btn-warning"><i class="fas fa-paper-plane"></i> Publish</button>
+          <a href="{% url 'faculty_dashboard' %}" class="btn btn-secondary ms-2">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends 'base/base.html' %}
+{% block title %}Edit Quiz{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card shadow">
+      <div class="card-header bg-warning"><h5><i class="fas fa-edit"></i> Edit Quiz</h5></div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-bold">Title</label>
+            <input type="text" class="form-control" name="title" value="{{ quiz.title }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Description</label>
+            <textarea class="form-control" name="description" rows="2">{{ quiz.description }}</textarea>
+          </div>
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label fw-bold">Duration (minutes)</label>
+              <input type="number" class="form-control" name="duration_minutes" value="{{ quiz.duration_minutes }}" min="1">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label fw-bold">Total Marks</label>
+              <input type="number" class="form-control" name="total_marks" value="{{ quiz.total_marks }}" min="1">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label fw-bold">Passing Marks</label>
+              <input type="number" class="form-control" name="passing_marks" value="{{ quiz.passing_marks }}" min="0">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Start Time</label>
+              <input type="datetime-local" class="form-control" name="start_time"
+                     value="{{ quiz.start_time|date:'Y-m-d' }}T{{ quiz.start_time|time:'H:i' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">End Time</label>
+              <input type="datetime-local" class="form-control" name="end_time"
+                     value="{{ quiz.end_time|date:'Y-m-d' }}T{{ quiz.end_time|time:'H:i' }}">
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="shuffle_questions" {% if quiz.shuffle_questions %}checked{% endif %}>
+                <label class="form-check-label">Shuffle Questions</label>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="show_results" {% if quiz.show_results %}checked{% endif %}>
+                <label class="form-check-label">Show Results</label>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="is_active" {% if quiz.is_active %}checked{% endif %}>
+                <label class="form-check-label">Active</label>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-warning"><i class="fas fa-save"></i> Save Changes</button>
+          <a href="{% url 'faculty_manage_quizzes' %}" class="btn btn-secondary ms-2">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

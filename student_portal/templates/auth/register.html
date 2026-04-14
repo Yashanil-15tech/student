@@ -1,0 +1,65 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Register - Student Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white text-center">
+                <h4><i class="fas fa-user-plus"></i> Register</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Register as</label>
+                        <div class="d-flex gap-3">
+                          <div class="form-check">
+                            <input class="form-check-input" type="radio" name="role" id="role_student" value="student" checked>
+                            <label class="form-check-label" for="role_student"><i class="fas fa-user-graduate"></i> Student</label>
+                          </div>
+                          <div class="form-check">
+                            <input class="form-check-input" type="radio" name="role" id="role_faculty" value="faculty">
+                            <label class="form-check-label" for="role_faculty"><i class="fas fa-chalkboard-teacher"></i> Faculty</label>
+                          </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="id_username" name="username" required>
+                        <small class="text-muted">150 characters or fewer. Letters, digits and @/./+/-/_ only.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_password1" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="id_password1" name="password1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_password2" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" id="id_password2" name="password2" required>
+                        <small class="text-muted">Enter the same password as before, for verification.</small>
+                    </div>
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-user-plus"></i> Register
+                    </button>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <small>Already have an account? <a href="{% url 'login' %}">Login here</a></small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

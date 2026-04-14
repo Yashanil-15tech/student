@@ -1,0 +1,190 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ quiz.title }} - Quiz{% endblock %}
+
+{% block extra_css %}
+<style>
+    .timer-box {
+        position: sticky;
+        top: 70px;
+        z-index: 100;
+    }
+    .question-card {
+        margin-bottom: 20px;
+    }
+    .choice-label {
+        cursor: pointer;
+        padding: 10px;
+        border: 2px solid #e0e0e0;
+        border-radius: 5px;
+        transition: all 0.3s;
+    }
+    .choice-label:hover {
+        background-color: #f5f5f5;
+    }
+    .choice-label input[type="radio"]:checked + span {
+        font-weight: bold;
+    }
+    input[type="radio"]:checked + .choice-label {
+        border-color: #0d6efd;
+        background-color: #e7f3ff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-9">
+        <h2 class="mb-4">{{ quiz.title }}</h2>
+        
+        <div class="alert alert-info">
+            <strong>Course:</strong> {{ quiz.course.code }} | 
+            <strong>Total Marks:</strong> {{ quiz.total_marks }} | 
+            <strong>Questions:</strong> {{ questions|length }}
+        </div>
+
+        <form method="post" action="{% url 'submit_quiz' attempt.id %}" id="quizForm">
+            {% csrf_token %}
+            
+            {% for question in questions %}
+            <div class="card question-card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Question {{ forloop.counter }} ({{ question.marks }} mark{{ question.marks|pluralize }})</h5>
+                </div>
+                <div class="card-body">
+                    <p class="lead">{{ question.question_text }}</p>
+                    
+                    {% if question.question_type == 'MCQ' %}
+                    <div class="mt-3">
+                        {% for choice in question.choices.all %}
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" 
+                                   name="question_{{ question.id }}" 
+                                   id="choice_{{ choice.id }}" 
+                                   value="{{ choice.id }}">
+                            <label class="form-check-label choice-label w-100" for="choice_{{ choice.id }}">
+                                <span>{{ choice.choice_text }}</span>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    {% elif question.question_type == 'TF' %}
+                    <div class="mt-3">
+                        {% for choice in question.choices.all %}
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" 
+                                   name="question_{{ question.id }}" 
+                                   id="choice_{{ choice.id }}" 
+                                   value="{{ choice.id }}">
+                            <label class="form-check-label choice-label w-100" for="choice_{{ choice.id }}">
+                                <span>{{ choice.choice_text }}</span>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    {% elif question.question_type == 'SA' %}
+                    <div class="mt-3">
+                        <textarea class="form-control" name="question_{{ question.id }}" 
+                                  rows="4" placeholder="Type your answer here..."></textarea>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="text-center mb-4">
+                <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
+                    <i class="fas fa-paper-plane"></i> Submit Quiz
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <div class="col-lg-3">
+        <div class="timer-box">
+            <div class="card border-warning">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="fas fa-clock"></i> Time Remaining</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h2 id="timer" class="text-danger mb-0">--:--</h2>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">Quiz Info</h6>
+                </div>
+                <div class="card-body">
+                    <p><small><strong>Total Questions:</strong> {{ questions|length }}</small></p>
+                    <p><small><strong>Total Marks:</strong> {{ quiz.total_marks }}</small></p>
+                    <p><small><strong>Duration:</strong> {{ quiz.duration_minutes }} min</small></p>
+                </div>
+            </div>
+            
+            <div class="alert alert-warning mt-3">
+                <small><i class="fas fa-exclamation-triangle"></i> The quiz will auto-submit when time expires.</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    let timeRemaining = {{ time_remaining }};
+    
+    function updateTimer() {
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        
+        $('#timer').text(
+            String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0')
+        );
+        
+        // Change color based on time
+        if (timeRemaining <= 60) {
+            $('#timer').removeClass('text-warning').addClass('text-danger');
+        } else if (timeRemaining <= 300) {
+            $('#timer').removeClass('text-danger').addClass('text-warning');
+        }
+        
+        // Auto-submit when time expires
+        if (timeRemaining <= 0) {
+            $('#timer').text('00:00');
+            alert('Time is up! The quiz will now be submitted.');
+            $('#quizForm').submit();
+            return;
+        }
+        
+        timeRemaining--;
+    }
+    
+    // Update timer every second
+    updateTimer();
+    const timerInterval = setInterval(updateTimer, 1000);
+    
+    // Confirm before leaving page
+    window.onbeforeunload = function() {
+        return "Are you sure you want to leave? Your quiz progress will be lost.";
+    };
+    
+    // Remove warning on form submit
+    $('#quizForm').on('submit', function() {
+        window.onbeforeunload = null;
+        clearInterval(timerInterval);
+    });
+    
+    // Prevent accidental submission
+    $('#submitBtn').on('click', function(e) {
+        if (!confirm('Are you sure you want to submit the quiz? You cannot change your answers after submission.')) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

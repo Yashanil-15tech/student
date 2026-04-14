@@ -1,0 +1,29 @@
+{% extends 'base/base.html' %}
+{% block title %}Timetable{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-clock"></i> Weekly Timetable</h2>
+<div class="table-responsive">
+  <table class="table table-bordered text-center align-middle">
+    <thead class="table-primary">
+      <tr><th style="width:120px">Day</th><th>Schedule</th></tr>
+    </thead>
+    <tbody>
+      {% for day, slots in timetable_data %}
+      <tr>
+        <td class="fw-bold">{{ day }}</td>
+        <td>
+          {% for slot in slots %}
+          <span class="badge bg-primary me-2 mb-1 p-2">
+            {{ slot.course.code }}<br>
+            <small>{{ slot.start_time|time:"H:i" }}–{{ slot.end_time|time:"H:i" }}<br>Room: {{ slot.room }}</small>
+          </span>
+          {% empty %}
+          <span class="text-muted">—</span>
+          {% endfor %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,130 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Quiz Result - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <h2 class="mb-4 text-center">Quiz Results</h2>
+        
+        <!-- Result Summary Card -->
+        <div class="card mb-4">
+            <div class="card-header {% if passed %}bg-success{% else %}bg-danger{% endif %} text-white">
+                <h4 class="mb-0 text-center">
+                    {% if passed %}
+                    <i class="fas fa-check-circle"></i> Passed!
+                    {% else %}
+                    <i class="fas fa-times-circle"></i> Not Passed
+                    {% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3 mb-3">
+                        <h5>Score</h5>
+                        <h2 class="text-primary">{{ attempt.score }} / {{ quiz.total_marks }}</h2>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <h5>Percentage</h5>
+                        <h2 class="{% if passed %}text-success{% else %}text-danger{% endif %}">{{ percentage }}%</h2>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <h5>Correct Answers</h5>
+                        <h2 class="text-info">{{ correct_answers }} / {{ total_questions }}</h2>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <h5>Time Taken</h5>
+                        <h2 class="text-warning">{{ time_taken }} min</h2>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Quiz:</strong> {{ quiz.title }}</p>
+                        <p><strong>Course:</strong> {{ quiz.course.code }} - {{ quiz.course.name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Passing Marks:</strong> {{ quiz.passing_marks }}</p>
+                        <p><strong>Completed:</strong> {{ attempt.end_time|date:"M d, Y H:i" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Answers -->
+        {% if quiz.show_results %}
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-list"></i> Detailed Answers</h5>
+            </div>
+            <div class="card-body">
+                {% for answer in answers %}
+                <div class="card mb-3">
+                    <div class="card-header {% if answer.is_correct %}bg-success{% else %}bg-danger{% endif %} text-white">
+                        <strong>Question {{ forloop.counter }}</strong>
+                        {% if answer.is_correct %}
+                        <i class="fas fa-check float-end"></i>
+                        {% else %}
+                        <i class="fas fa-times float-end"></i>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <p class="lead">{{ answer.question.question_text }}</p>
+                        
+                        {% if answer.question.question_type == 'MCQ' or answer.question.question_type == 'TF' %}
+                        <div class="mt-3">
+                            <p><strong>Your Answer:</strong> 
+                                <span class="{% if answer.is_correct %}text-success{% else %}text-danger{% endif %}">
+                                    {{ answer.selected_choice.choice_text }}
+                                </span>
+                            </p>
+                            
+                            {% if not answer.is_correct %}
+                            <p><strong>Correct Answer:</strong> 
+                                <span class="text-success">
+                                    {% for choice in answer.question.choices.all %}
+                                        {% if choice.is_correct %}
+                                            {{ choice.choice_text }}
+                                        {% endif %}
+                                    {% endfor %}
+                                </span>
+                            </p>
+                            {% endif %}
+                        </div>
+                        
+                        {% elif answer.question.question_type == 'SA' %}
+                        <div class="mt-3">
+                            <p><strong>Your Answer:</strong></p>
+                            <div class="alert alert-secondary">{{ answer.text_answer }}</div>
+                            <p class="text-muted"><small>Note: Short answers require manual grading by the instructor.</small></p>
+                        </div>
+                        {% endif %}
+                        
+                        <p class="mb-0 mt-2">
+                            <strong>Marks:</strong> {{ answer.marks_obtained }} / {{ answer.question.marks }}
+                        </p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Detailed answers are not shown for this quiz.
+        </div>
+        {% endif %}
+
+        <div class="text-center mt-4">
+            <a href="{% url 'quiz_list' %}" class="btn btn-primary">
+                <i class="fas fa-list"></i> Back to Quiz List
+            </a>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                <i class="fas fa-home"></i> Go to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

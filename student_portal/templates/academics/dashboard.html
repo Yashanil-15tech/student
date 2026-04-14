@@ -1,0 +1,191 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}Dashboard - Student Portal{% endblock %}
+{% block content %}
+<h2 class="mb-1">Welcome, {{ student.user.get_full_name|default:student.user.username }}!</h2>
+<p class="text-muted mb-4">{{ student.branch }} | Semester {{ student.semester }} | Reg: {{ student.registration_number }}</p>
+
+{% for alert in shortage_alerts %}
+<div class="alert alert-danger d-flex align-items-center" role="alert">
+  <i class="fas fa-exclamation-triangle me-2 fs-5"></i>
+  <div><strong>Attendance Shortage:</strong> {{ alert.course.code }} — {{ alert.course.name }}
+  is at <strong>{{ alert.percentage }}%</strong>. Minimum required is 75%.</div>
+</div>
+{% endfor %}
+
+{% if announcements %}
+<div class="card mb-4 border-warning">
+  <div class="card-header bg-warning"><h6 class="mb-0"><i class="fas fa-bullhorn"></i> Announcements</h6></div>
+  <div class="list-group list-group-flush">
+    {% for ann in announcements %}
+    <div class="list-group-item">
+      <div class="d-flex justify-content-between">
+        <strong>{{ ann.title }}</strong>
+        <small class="text-muted">{{ ann.created_at|date:"M d" }}{% if ann.target_course %} · {{ ann.target_course.code }}{% endif %}</small>
+      </div>
+      <p class="mb-0 small text-muted">{{ ann.content|truncatewords:25 }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="fas fa-user"></i> Student Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Registration No:</strong> {{ student.registration_number }}</p>
+                <p><strong>Branch:</strong> {{ student.branch }}</p>
+                <p><strong>Semester:</strong> {{ student.semester }}</p>
+                <p><strong>Email:</strong> {{ student.user.email|default:"Not set" }}</p>
+                {% if cgpa %}<p><strong>CGPA:</strong> <span class="badge bg-success fs-6">{{ cgpa }}</span></p>{% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8 mb-4">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="card text-white bg-success">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-book"></i> Enrolled Courses</h5>
+                        <h2>{{ courses|length }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card text-white bg-warning">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-tasks"></i> Assignments</h5>
+                        <h2>{{ recent_assignments|length }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card text-white bg-info">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-calendar"></i> Upcoming Exams</h5>
+                        <h2>{{ upcoming_exams|length }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card text-white {% if shortage_alerts %}bg-danger{% else %}bg-success{% endif %}">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-calendar-check"></i> Attendance Alerts</h5>
+                        <h2>{{ shortage_alerts|length }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between">
+                <h5><i class="fas fa-calendar-check"></i> Attendance Overview</h5>
+                <a href="{% url 'attendance' %}" class="btn btn-sm btn-light">View All</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>Course</th><th>Present</th><th>Total</th><th>Percentage</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for stat in attendance_stats %}
+                            <tr>
+                                <td>{{ stat.course.code }} – {{ stat.course.name }}</td>
+                                <td>{{ stat.present }}</td>
+                                <td>{{ stat.total }}</td>
+                                <td>{{ stat.percentage }}%</td>
+                                <td>
+                                    {% if stat.percentage >= 75 %}<span class="badge bg-success">Good</span>
+                                    {% elif stat.percentage >= 60 %}<span class="badge bg-warning text-dark">Warning</span>
+                                    {% else %}<span class="badge bg-danger">Shortage</span>{% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-muted">No attendance records found</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-warning d-flex justify-content-between">
+                <h5><i class="fas fa-tasks"></i> Upcoming Assignments</h5>
+                <a href="{% url 'assignments' %}" class="btn btn-sm btn-dark">View All</a>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for assignment in recent_assignments %}
+                <li class="list-group-item">
+                    <strong>{{ assignment.course.code }}:</strong> {{ assignment.title }}
+                    <br><small class="text-muted">Due: {{ assignment.due_date|date:"M d, Y H:i" }}</small>
+                </li>
+                {% empty %}<li class="list-group-item text-muted">No assignments found</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5><i class="fas fa-calendar"></i> Upcoming Exams</h5>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for exam in upcoming_exams %}
+                <li class="list-group-item">
+                    <strong>{{ exam.course.code }}:</strong> {{ exam.name }}
+                    <br><small class="text-muted">{{ exam.date|date:"M d, Y" }} | Max: {{ exam.max_marks }} marks</small>
+                </li>
+                {% empty %}<li class="list-group-item text-muted">No upcoming exams</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-success text-white d-flex justify-content-between">
+                <h5><i class="fas fa-chart-line"></i> Recent Results</h5>
+                <div>
+                    <a href="{% url 'results' %}" class="btn btn-sm btn-light me-2">View All</a>
+                    <a href="{% url 'download_academic_report' %}" class="btn btn-sm btn-warning">
+                        <i class="fas fa-file-pdf"></i> Download Report
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>Course</th><th>Exam</th><th>Marks</th><th>Grade</th></tr></thead>
+                        <tbody>
+                            {% for result in recent_results %}
+                            <tr>
+                                <td>{{ result.exam.course.code }}</td>
+                                <td>{{ result.exam.name }}</td>
+                                <td>{{ result.marks_obtained }} / {{ result.exam.max_marks }}</td>
+                                <td><span class="badge bg-primary">{{ result.grade }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center text-muted">No results found</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
